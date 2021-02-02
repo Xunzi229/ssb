@@ -1,0 +1,5 @@
+*.log
+nohup.out
+**/.idea
+**/.vscode
+/vendor
