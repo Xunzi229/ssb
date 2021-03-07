@@ -3,6 +3,7 @@ package service
 import (
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -43,17 +44,13 @@ func HideFile(doc string) {
 
 // windows
 func hideWindowDir(pathName string) error {
-	// 暂时编译的问题没处理好
-	// var err error
+	var err error
 
-	// if runtime.GOOS == "windows" {
-	// 	fileName, err := syscall.UTF16PtrFromString(pathName)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	err = syscall.SetFileAttributes(fileName, syscall.FILE_ATTRIBUTE_HIDDEN)
-	// }
-	return nil
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("attrib", pathName, "+h")
+		err = cmd.Run()
+	}
+	return err
 }
 
 // unix
