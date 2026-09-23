@@ -1,42 +1,41 @@
 package service
 
 import (
-  "crypto/rand"
-  "crypto/rsa"
-  "crypto/x509"
-  "encoding/pem"
-  "golang.org/x/crypto/ssh"
-  "io/ioutil"
-  "log"
-  "os"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"os"
+	"path/filepath"
+
+	"golang.org/x/crypto/ssh"
 )
 
 // makeSSHKeyPair
 // create RSA key
-func makeSSHKeyPair(savePublicFileTo, savePrivateFileTo string) {
+func makeSSHKeyPair(savePublicFileTo, savePrivateFileTo string) error {
+	if err := secureOwnerDir(filepath.Dir(savePrivateFileTo)); err != nil {
+		return err
+	}
+
 	privateKey, err := generatePrivateKey(bitSize)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
 	publicKeyBytes, err := generatePublicKey(&privateKey.PublicKey)
 	if err != nil {
-		log.Fatal(err.Error())
+		return err
 	}
 
 	privateKeyBytes := encodePrivateKeyToPEM(privateKey)
 
 	// 这一块考虑原子性， 能还原问题
 	// 后面再解决吧
-  	err = writeKeyToFile(privateKeyBytes, savePrivateFileTo, 0600)
-	if err != nil {
-		log.Fatal(err.Error())
+	if err = writeKeyToFile(privateKeyBytes, savePrivateFileTo, 0600); err != nil {
+		return err
 	}
-
-	err = writeKeyToFile(publicKeyBytes, savePublicFileTo, 0644)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	return writeKeyToFile(publicKeyBytes, savePublicFileTo, 0644)
 }
 
 // generatePrivateKey creates a RSA Private Key of specified byte size
@@ -85,10 +84,15 @@ func generatePublicKey(privateKey *rsa.PublicKey) ([]byte, error) {
 
 // writePemToFile
 // writes keys to a file
-func writeKeyToFile(keyBytes []byte, saveFileTo string, chmod os.FileMode) error {
-	err := ioutil.WriteFile(saveFileTo, keyBytes, chmod)
-	if err != nil {
+func writeKeyToFile(keyBytes []byte, saveFileTo string, perm os.FileMode) error {
+	if err := prepareOverwrite(saveFileTo, perm); err != nil {
 		return err
 	}
-	return nil
+	if err := os.WriteFile(saveFileTo, keyBytes, perm); err != nil {
+		return err
+	}
+	if perm == 0600 {
+		return securePrivateKey(saveFileTo)
+	}
+	return os.Chmod(saveFileTo, perm)
 }

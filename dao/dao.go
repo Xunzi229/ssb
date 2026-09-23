@@ -2,17 +2,14 @@ package dao
 
 import "fmt"
 
+// 在 Run 之前创建，避免 ScreenInput 打在 nil channel 上。
 var (
-	TipChan  chan string
-	StopChan chan bool
-	MsgChan  chan string
+	TipChan  = make(chan string)
+	StopChan = make(chan bool)
+	MsgChan  = make(chan string)
 )
 
 func Run() {
-	TipChan = make(chan string, 0)
-	StopChan = make(chan bool, 0)
-	MsgChan = make(chan string, 0)
-
 	for {
 		v := ""
 		select {

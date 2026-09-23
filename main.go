@@ -1,14 +1,14 @@
 package main
 
 import (
-  "context"
-  "github.com/urfave/cli/v2"
-  "log"
-  "os"
-  "ssb/config"
-  "ssb/dao"
-  "ssb/service"
-  "time"
+	"context"
+	"github.com/urfave/cli/v2"
+	"log"
+	"os"
+	"ssb/config"
+	"ssb/dao"
+	"ssb/service"
+	"time"
 )
 
 var app = &cli.App{}
@@ -21,8 +21,7 @@ func init() {
 				Aliases: []string{"g"},
 				Usage:   "Generate new rsa key",
 				Action: func(c *cli.Context) error {
-					service.Generate(context.Background())
-					return nil
+					return service.Generate(context.Background())
 				},
 			},
 			{
@@ -34,8 +33,7 @@ func init() {
 					if c.NArg() > 0 {
 						name = c.Args().Get(0)
 					}
-					service.Backup(context.Background(), name)
-					return nil
+					return service.Backup(context.Background(), name)
 				},
 			},
 			{
@@ -56,8 +54,7 @@ func init() {
 					if c.NArg() > 0 {
 						dst = c.Args().Get(0)
 					}
-					service.Switch(context.Background(), dst)
-					return nil
+					return service.Switch(context.Background(), dst)
 				},
 			},
 			{
@@ -69,8 +66,7 @@ func init() {
 					if c.NArg() > 0 {
 						dst = c.Args().Get(0)
 					}
-					service.Export(context.Background(), dst)
-					return nil
+					return service.Export(context.Background(), dst)
 				},
 			},
 			{
@@ -82,8 +78,7 @@ func init() {
 					if c.NArg() > 0 {
 						zip = c.Args().Get(0)
 					}
-					service.Load(context.Background(), zip)
-					return nil
+					return service.Load(context.Background(), zip)
 				},
 			},
 		},
